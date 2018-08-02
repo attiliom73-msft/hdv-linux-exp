@@ -109,7 +109,6 @@ int pci_probe (struct pci_dev* dev, const struct pci_device_id* id)
     int result;
     unsigned long bar0_start;
     unsigned long bar0_end;
-    u32 bar0;
 
     pr_info("pci probe\n");
     
@@ -131,18 +130,9 @@ int pci_probe (struct pci_dev* dev, const struct pci_device_id* id)
     bar0_end = pci_resource_end(dev, 0);
     pr_info("resource: BAR0 = %lx - %lx\n", bar0_start, bar0_end);
     
-    pci_read_config_dword(dev, 0x10, &bar0);
-    pr_info("config space: BAR0 = %x\n", bar0);
-    /*
     g_dev.bar0 = pci_iomap(dev, 0, 4096);
     if (g_dev.bar0 == NULL) {
         pr_alert("pci_iomap failed\n");
-        return -ENOMEM;
-    }
-    */
-    g_dev.bar0 = ioremap(bar0, 4096);
-    if (g_dev.bar0 == NULL) {
-        pr_alert("ioremap failed\n");
         return -ENOMEM;
     }
     pr_info("BAR0 VA = %lx\n", (unsigned long)g_dev.bar0);
@@ -168,10 +158,8 @@ int pci_probe (struct pci_dev* dev, const struct pci_device_id* id)
         return result;
     }
     pr_info("pci device enabled\n");
-
     
-    writel((unsigned int)g_dev.buffer_physical_address, g_dev.bar0);
-    
+    writeq((unsigned long)g_dev.buffer_physical_address, g_dev.bar0);
     
     return result;        
 }
